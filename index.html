@@ -587,7 +587,7 @@ textarea.adm-in{resize:vertical;line-height:1.45}
       <span class="recruit-num"><b id="recCount">0</b> из <b id="recMax">60</b> участников</span>
     </div>
     <div class="bar"><div class="fill" id="recFill"></div></div>
-    <div class="recruit-meta"><span>Возраст 14+</span><span>100 сообщений в неделю</span></div>
+    <div class="recruit-meta"><span>Возраст 14+</span><span>80 сообщений в неделю</span></div>
     <div class="cleanup">
       <span>До чистки <small>(вс, 21:00 МСК)</small></span>
       <span class="timer" id="cleanupTimer">—</span>
@@ -1356,7 +1356,7 @@ function runSite() {
 }
 
 if (HAS_DB || window.__DB_MOCK) {
-  const timer = setTimeout(runSite, 8000);   // если база молчит, показываем то, что в файле
+  const timer = setTimeout(runSite, 15000);   // если база молчит, показываем то, что в файле
   DB.readAll()
     .then(d => { if (d.main && !runSite.done) window.REMOTE = toRemote(d); })
     .catch(err => console.warn("База недоступна, показываю данные из файла:", err))
@@ -2012,6 +2012,15 @@ if (HAS_DB || window.__DB_MOCK) {
     }
   });
 })();
+</script>
+<script>
+/* Перезагрузить страницу, если её достали из кэша или вкладка долго была в фоне, чтобы данные были свежими */
+addEventListener("pageshow", e => { if (e.persisted) location.reload(); });
+let hiddenAt = 0;
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) hiddenAt = Date.now();
+  else if (hiddenAt && Date.now() - hiddenAt > 60000 && document.getElementById("adm").hidden) location.reload();
+});
 </script>
 </body>
 </html>
