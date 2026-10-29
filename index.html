@@ -858,6 +858,8 @@ function renderRecruit() {
 }
 
 const norm = t => t.toLowerCase().replace(/ё/g, "е").replace(/[\s\-]/g, "");
+  const startsWithQuery = (name, q) => !!q && (norm(name).startsWith(q) ||
+  name.toLowerCase().replace(/ё/g, "е").split(/[\s\-]+/).some(w => w.startsWith(q)));
 
 function renderCards(query) {
   document.querySelectorAll(".fandom").forEach(d => {
@@ -866,10 +868,10 @@ function renderCards(query) {
   });
   document.querySelectorAll(".taken").forEach(box => {
     const all = takenRoles[box.dataset.game] || [];
-    const isHit = n => query && norm(n).includes(query);
+    const isHit = n => startsWithQuery(n, query);
     const list = [...all.filter(isHit), ...all.filter(n => !isHit(n))]; // найденные — в начало
     box.innerHTML = list.length
-      ? list.map(n => `<div class="role ${query && norm(n).includes(query) ? "hit" : ""}">${pic(n)}${n}</div>`).join("")
+      ? list.map(n => `<div class="role ${startsWithQuery(n, query) ? "hit" : ""}">${pic(n)}${n}</div>`).join("")
       : "<p>Пока все роли свободны.</p>";
   });
 }
@@ -882,14 +884,14 @@ function check() {
   const found = [];
   for (const [game, list] of Object.entries(takenRoles))
     list.forEach(n => {
-      if (norm(n).includes(q)) {
+      if (startsWithQuery(n, q)) {
         found.push(`<div>${pic(n)}${n} · ${game}</div>`);
         document.querySelector(`.fandom[data-game="${game}"]`).open = true; // раскрыть фандом с найденной ролью
       }
     });
   out.innerHTML = found.length
     ? `<span class="busy">Уже занято:</span><div class="found">${found.join("")}</div>`
-    : `<span class="free">Свободно, можно подавать заявку!</span>`;
+    : `<span class="free">${q.length === 1 ? "На эту букву занятых ролей нет." : "Свободно, можно подавать заявку!"}</span>`;
 }
 
 document.getElementById("roleInput").addEventListener("input", check);
